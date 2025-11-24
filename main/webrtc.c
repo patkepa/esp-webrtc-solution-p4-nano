@@ -41,8 +41,14 @@ static int webrtc_event_handler(esp_webrtc_event_t *event, void *ctx)
     } else if (event->type == ESP_WEBRTC_EVENT_CONNECT_FAILED) {
         ESP_LOGI(TAG, "WebRTC connection failed");
     } else if (event->type == ESP_WEBRTC_EVENT_DISCONNECTED) {
-        ESP_LOGI(TAG, "WebRTC peer disconnected");
+        ESP_LOGI(TAG, "WebRTC peer disconnected - re-enabling peer connection");
         play_join_sound();
+
+        // Re-enable peer connection to allow new peers to connect
+        if (webrtc) {
+            esp_webrtc_enable_peer_connection(webrtc, true);
+            ESP_LOGI(TAG, "Peer connection re-enabled, ready for new connection");
+        }
     }
     return 0;
 }
