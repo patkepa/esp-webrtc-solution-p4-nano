@@ -1,0 +1,55 @@
+{
+  "name": "ESP-IDF QEMU",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "args": {
+      "USER_UID": "1000",
+      "USER_GID": "1000"
+    }
+  },
+  "remoteUser": "esp",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/${localWorkspaceFolderBasename},type=bind,consistency=cached",
+  "postCreateCommand": "bash -c 'sudo chown -R esp:esp /workspaces/${localWorkspaceFolderBasename} 2>/dev/null || true'",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "idf.espIdfPath": "/opt/esp/idf",
+        "idf.customExtraPaths": "",
+        "idf.pythonBinPath": "/opt/esp/python_env/idf5.2_py3.12_env/bin/python",
+        "idf.toolsPath": "/opt/esp",
+        "idf.gitPath": "/usr/bin/git"
+      },
+      "extensions": ["espressif.esp-idf-extension"]
+    },
+    "codespaces": {
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "idf.espIdfPath": "/opt/esp/idf",
+        "idf.customExtraPaths": "",
+        "idf.pythonBinPath": "/opt/esp/python_env/idf5.2_py3.12_env/bin/python",
+        "idf.toolsPath": "/opt/esp",
+        "idf.gitPath": "/usr/bin/git"
+      },
+      "extensions": ["espressif.esp-idf-extension", "espressif.esp-idf-web"]
+    }
+  },
+  "runArgs": [
+    "--privileged",
+    "--group-add=dialout",
+    "--security-opt",
+    "label=disable",
+    "--userns=host"
+  ],
+  "mounts": [
+    {
+      "type": "bind",
+      "source": "/dev",
+      "target": "/dev"
+    }
+  ],
+  "containerEnv": {
+    "UDEV": "1"
+  }
+}
