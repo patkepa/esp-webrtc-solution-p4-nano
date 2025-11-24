@@ -3,7 +3,6 @@ idf_component_register(SRCS "webrtc.c"  "main.c" "board.c" "media_sys.c"
                        INCLUDE_DIRS "."
                        REQUIRES esp_webrtc
                                 common
-                                console
                                 codec_board
                                 av_render
                                 media_lib_sal
