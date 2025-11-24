@@ -222,8 +222,9 @@ int start_webrtc(char *url)
     // Set event handler
     esp_webrtc_set_event_handler(webrtc, webrtc_event_handler, NULL);
 
-    // Default disable auto connect of peer connection
-    esp_webrtc_enable_peer_connection(webrtc, false);
+    // Enable peer connection immediately (skip call acceptance)
+    // Note: Peer connection will start when browser joins the room
+    esp_webrtc_enable_peer_connection(webrtc, true);
 
     // Start webrtc
     ret = esp_webrtc_start(webrtc);
