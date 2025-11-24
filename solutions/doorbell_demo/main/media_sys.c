@@ -11,6 +11,7 @@
 #include "codec_board.h"
 #if CONFIG_IDF_TARGET_ESP32P4
 #include "esp_video_init.h"
+#include "esp_ldo_regulator.h"
 #endif
 #include "av_render.h"
 #include "av_render_default.h"
@@ -50,6 +51,10 @@ typedef struct {
 static capture_system_t capture_sys;
 static player_system_t  player_sys;
 
+#if CONFIG_IDF_TARGET_ESP32P4
+static esp_ldo_channel_handle_t ldo_mipi_phy = NULL;
+#endif
+
 static bool           music_playing  = false;
 static bool           music_stopping = false;
 static const uint8_t *music_to_play;
@@ -63,6 +68,21 @@ static esp_capture_video_src_if_t *create_video_source(void)
     if (ret != 0) {
         return NULL;
     }
+#if CONFIG_IDF_TARGET_ESP32P4
+    // Initialize MIPI LDO for camera power
+    if (ldo_mipi_phy == NULL) {
+        esp_ldo_channel_config_t ldo_mipi_phy_config = {
+            .chan_id = 3,
+            .voltage_mv = 2500,
+        };
+        ret = esp_ldo_acquire_channel(&ldo_mipi_phy_config, &ldo_mipi_phy);
+        if (ret != ESP_OK) {
+            ESP_LOGE(TAG, "Failed to acquire MIPI LDO channel: 0x%x", ret);
+            return NULL;
+        }
+        ESP_LOGI(TAG, "MIPI LDO initialized successfully");
+    }
+#endif
 #if CONFIG_IDF_TARGET_ESP32P4
     esp_video_init_csi_config_t csi_config = { 0 };
     esp_video_init_dvp_config_t dvp_config = { 0 };
@@ -162,15 +182,10 @@ static int build_player_system()
         ESP_LOGE(TAG, "Fail to create audio render");
         return -1;
     }
-    lcd_render_cfg_t lcd_cfg = {
-        .lcd_handle = board_get_lcd_handle(),
-    };
-    player_sys.video_render = av_render_alloc_lcd_render(&lcd_cfg);
 
-    if (player_sys.video_render == NULL) {
-        ESP_LOGE(TAG, "Fail to create video render");
-        // Allow not display
-    }
+    // No LCD support for ESP32-P4 Nano - video is streamed via WebRTC only
+    player_sys.video_render = NULL;
+
     av_render_cfg_t render_cfg = {
         .audio_render = player_sys.audio_render,
         .video_render = player_sys.video_render,

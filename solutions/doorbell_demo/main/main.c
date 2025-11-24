@@ -11,6 +11,7 @@
 #include <esp_event.h>
 #include <esp_log.h>
 #include <esp_system.h>
+#include <esp_random.h>
 #include <nvs_flash.h>
 #include <sys/param.h>
 #include "argtable3/argtable3.h"
@@ -247,10 +248,13 @@ static void capture_scheduler(const char *name, esp_capture_thread_schedule_cfg_
 
 static char* gen_room_id_use_mac(void)
 {
-    static char room_mac[16];
+    static char room_mac[24];
     uint8_t mac[6];
+    uint32_t random_suffix;
     network_get_mac(mac);
-    snprintf(room_mac, sizeof(room_mac)-1, "esp_%02x%02x%02x", mac[3], mac[4], mac[5]);
+    esp_fill_random(&random_suffix, sizeof(random_suffix));
+    snprintf(room_mac, sizeof(room_mac)-1, "esp_%02x%02x%02x_%04x",
+             mac[3], mac[4], mac[5], (unsigned int)(random_suffix & 0xFFFF));
     return room_mac;
 }
 

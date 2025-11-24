@@ -78,6 +78,12 @@ lcd: {
     width: 1024, height: 600,
 }
 
+Board: ESP32_P4_NANO
+i2c: {sda: 7, scl: 8}
+i2s: {mclk: 13, bclk: 12, ws: 10, dout: 9, din: 11}
+in_out: {codec: ES8311, pa: 53, use_mclk: 1, pa_gain:6}
+camera: {type: mipi, xclk: -1, pwr: -1, reset: -1}
+
 Board: ESP32S3_EYE
 i2c: {sda: 4, scl: 5}
 i2s: {mclk: -1, bclk: 41, ws: 42, dout: -1, din: 2}
