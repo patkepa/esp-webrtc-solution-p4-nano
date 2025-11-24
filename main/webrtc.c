@@ -112,8 +112,12 @@ static int webrtc_event_handler(esp_webrtc_event_t *event, void *ctx)
 {
     if (event->type == ESP_WEBRTC_EVENT_CONNECTED) {
         door_bell_change_state(DOOR_BELL_STATE_CONNECTED);
+        // Play join sound when peer connects
+        play_tone(DOOR_BELL_TONE_JOIN_SUCCESS);
     } else if (event->type == ESP_WEBRTC_EVENT_CONNECT_FAILED || event->type == ESP_WEBRTC_EVENT_DISCONNECTED) {
         door_bell_change_state(DOOR_BELL_STATE_NONE);
+        // Play ring sound when peer disconnects (or connection fails)
+        play_tone(DOOR_BELL_TONE_RING);
     }
     return 0;
 }
