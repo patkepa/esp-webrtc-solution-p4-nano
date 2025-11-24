@@ -21,6 +21,14 @@ void init_board()
 {
     ESP_LOGI(TAG, "Init board.");
     set_codec_board_type(TEST_BOARD_NAME);
+
+    int ret = init_i2c(0);
+    if (ret != 0) {
+        ESP_LOGE(TAG, "Failed to initialize I2C port 0: %d", ret);
+    } else {
+        ESP_LOGI(TAG, "I2C port 0 initialized successfully");
+    }
+
     // Notes when use playback and record at same time, must set reuse_dev = false
     codec_init_cfg_t cfg = {.reuse_dev = false};
     init_codec(&cfg);

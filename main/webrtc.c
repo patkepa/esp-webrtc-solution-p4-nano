@@ -7,6 +7,13 @@
    CONDITIONS OF ANY KIND, either express or implied.
 */
 
+#include "sdkconfig.h"
+
+// Define WEBRTC_SUPPORT_OPUS based on sdkconfig
+#if CONFIG_AUDIO_ENCODER_OPUS_SUPPORT
+#define WEBRTC_SUPPORT_OPUS
+#endif
+
 #include "esp_webrtc.h"
 #include "media_lib_os.h"
 #include "common.h"
@@ -23,7 +30,7 @@ extern const uint8_t join_music_end[] asm("_binary_join_aac_end");
 
 static void play_join_sound(void)
 {
-    play_music(join_music_start, (int)(join_music_end - join_music_start), 0);
+
 }
 
 static int webrtc_event_handler(esp_webrtc_event_t *event, void *ctx)
@@ -56,7 +63,7 @@ int start_webrtc(char *url)
     }
 
     esp_peer_default_cfg_t peer_cfg = {
-        .agent_recv_timeout = 500,
+        .agent_recv_timeout = 2000,  // Increased timeout for slower networks
     };
     esp_webrtc_cfg_t cfg = {
         .peer_cfg = {
@@ -101,17 +108,24 @@ int start_webrtc(char *url)
     // Set event handler
     esp_webrtc_set_event_handler(webrtc, webrtc_event_handler, NULL);
 
-    // Enable peer connection immediately
-    esp_webrtc_enable_peer_connection(webrtc, true);
-
-    // Start webrtc
+    // Start webrtc first to fetch ICE credentials
     ret = esp_webrtc_start(webrtc);
     if (ret != 0) {
         ESP_LOGE(TAG, "Fail to start webrtc");
-    } else {
-        ESP_LOGI(TAG, "WebRTC started successfully");
-        play_join_sound();
+        return ret;
     }
+    ESP_LOGI(TAG, "WebRTC signaling started successfully");
+
+    // Give signaling a brief moment to connect and fetch ICE credentials
+    // The ICE fetch is asynchronous, and enabling peer connection before
+    // ICE info is available will cause an error (though it recovers automatically)
+    media_lib_thread_sleep(100);
+
+    // Enable peer connection after signaling starts
+    // This allows ICE info to be fetched before attempting connection
+    esp_webrtc_enable_peer_connection(webrtc, true);
+
+    play_join_sound();
     return ret;
 }
 

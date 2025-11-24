@@ -7,6 +7,13 @@
    CONDITIONS OF ANY KIND, either express or implied.
 */
 
+#include "sdkconfig.h"
+
+// Define WEBRTC_SUPPORT_OPUS based on sdkconfig
+#if CONFIG_AUDIO_ENCODER_OPUS_SUPPORT
+#define WEBRTC_SUPPORT_OPUS
+#endif
+
 #include <esp_wifi.h>
 #include <esp_event.h>
 #include <esp_log.h>
@@ -50,6 +57,11 @@ static void thread_scheduler(const char *thread_name, media_lib_thread_cfg_t *sc
 #ifdef WEBRTC_SUPPORT_OPUS
     else if (strcmp(thread_name, "aenc_0") == 0) {
         // For OPUS encoder it need huge stack, when use G711 can set it to small value
+        schedule_cfg->stack_size = 40 * 1024;
+        schedule_cfg->priority = 10;
+        schedule_cfg->core_id = 1;
+    }
+    else if (strcmp(thread_name, "Adec") == 0) {
         schedule_cfg->stack_size = 40 * 1024;
         schedule_cfg->priority = 10;
         schedule_cfg->core_id = 1;
@@ -113,7 +125,12 @@ static int network_event_handler(bool connected)
 
 void app_main(void)
 {
-    esp_log_level_set("*", ESP_LOG_INFO);
+    esp_log_level_set("*", ESP_LOG_WARN);
+    esp_log_level_set("Webrtc_Test", ESP_LOG_INFO);
+    esp_log_level_set("WEBRTC", ESP_LOG_INFO);
+    esp_log_level_set("Board", ESP_LOG_INFO);
+    esp_log_level_set("AGENT", ESP_LOG_INFO);  // Enable ICE agent logging
+    esp_log_level_set("PEER", ESP_LOG_INFO);   // Enable peer logging
     media_lib_add_default_adapter();
     esp_capture_set_thread_scheduler(capture_scheduler);
     media_lib_thread_set_schedule_cb(thread_scheduler);

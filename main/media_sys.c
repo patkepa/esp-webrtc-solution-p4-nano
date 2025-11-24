@@ -184,6 +184,8 @@ static int build_player_system()
     }
 
     // No LCD support for ESP32-P4 Nano - video is streamed via WebRTC only
+    // Setting video_render to NULL will cause av_render to skip incoming video streams
+    // This is expected behavior and the error logs can be safely ignored
     player_sys.video_render = NULL;
 
     av_render_cfg_t render_cfg = {
@@ -285,9 +287,11 @@ int test_capture_to_player(void)
 
 static void music_play_thread(void *arg)
 {
-    // Suppose all music is AAC
+
     av_render_audio_info_t render_aud_info = {
         .codec = AV_RENDER_AUDIO_CODEC_AAC,
+        .sample_rate = 16000,
+        .channel = 1,
     };
     av_render_add_audio_stream(player_sys.player, &render_aud_info);
     int music_pos = 0;
