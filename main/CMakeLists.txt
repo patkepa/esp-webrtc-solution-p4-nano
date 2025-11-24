@@ -1,5 +1,5 @@
 idf_component_register(SRCS "webrtc.c"  "main.c" "board.c" "media_sys.c"
-                       EMBED_TXTFILES "ring.aac" "open.aac" "join.aac"
+                       EMBED_TXTFILES "join.aac"
                        INCLUDE_DIRS "."
                        REQUIRES esp_webrtc
                                 common
